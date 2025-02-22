@@ -25,13 +25,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-  console.log(session)
-  if (session && session.user) {
-    session.user = {
-      name: session.user.name,
-      email: session.user.email,
-    };
-  }
+  // if (session && session.user) {
+  //   session.user = {
+  //     name: session.user.name,
+  //     email: session.user.email,
+  //   };
+  // }
   return (
     <html lang="fr">
       <body

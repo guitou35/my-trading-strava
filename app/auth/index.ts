@@ -16,18 +16,8 @@ const authOptions: NextAuthConfig = {
         }
     })
   ],
-  // callbacks: {
-  //   async jwt({ token, account }) {
-  //     if (account) {
-  //       token.accessToken = account.access_token;
-  //     }
-  //     return token;
-  //   },
-  //   async session({ session, token }) {
-  //     session.accessToken = token.accessToken;
-  //     return session;
-  //   },
-  // },
+  session: {
+    strategy: "jwt",},
   secret: process.env.NEXTAUTH_SECRET,
   basePath: BASE_PATH,
 };
