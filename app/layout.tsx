@@ -25,6 +25,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  console.log("session init : ", session)
   // if (session && session.user) {
   //   session.user = {
   //     name: session.user.name,
