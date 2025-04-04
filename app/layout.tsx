@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react"
 import { auth, BASE_PATH } from "./auth";
+import AuthButton from "./AuthButton.client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,19 +26,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-  console.log("session init : ", session)
-  // if (session && session.user) {
-  //   session.user = {
-  //     name: session.user.name,
-  //     email: session.user.email,
-  //   };
-  // }
+
   return (
     <html lang="fr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider basePath={BASE_PATH} session={session}>
+        <AuthButton />
         {children}
         </SessionProvider>
       </body>

@@ -1,32 +1,19 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL_UNPOOLED")
-}
-
-model User {
-  id            String          @id @default(cuid())
-  name          String?
-  email         String          @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  accounts      Account[]
-  Authenticator Authenticator[]
-  sessions      Session[]
 }
 
 model Account {
   userId            String
   type              String
   provider          String
-  providerAccountId String
+  providerAccountId Int
   refresh_token     String?
   access_token      String?
   expires_at        Int?
@@ -34,40 +21,114 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
+}
+
+model Activity {
+  id               String         @id @default(cuid())
+  userId           String
+  stravaActivityId String         @unique
+  type             ActivityType
+  distance         Float
+  movingTime       Int
+  elapsedTime      Int
+  startDate        DateTime
+  name             String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  AvatarReward     AvatarReward[]
+}
+
+model Avatar {
+  id             String          @id
+  name           String
+  description    String
+  rarity         Rarity
+  imageUrl       String
+  category       String
+  AvatarReward   AvatarReward[]
+  UnlockCriteria UnlockCriteria?
+  userAvatar     UserAvatar[]
+}
+
+model AvatarReward {
+  id         String   @id @default(cuid())
+  activityId String
+  avatarId   String
+  userId     String
+  awardedAt  DateTime @default(now())
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  avatar     Avatar   @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, avatarId])
 }
 
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String   @id
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-
-  @@id([identifier, token])
+model UnlockCriteria {
+  id               String        @id @default(cuid())
+  avatarId         String        @unique
+  activityType     ActivityType?
+  minDistance      Float?
+  minActivities    Int?
+  totalDistance    Float?
+  minElevation     Float?
+  specificLocation String?
+  avatar           Avatar        @relation(fields: [avatarId], references: [id], onDelete: Cascade)
 }
 
-model Authenticator {
-  credentialID         String  @unique
-  userId               String
-  providerAccountId    String
-  credentialPublicKey  String
-  counter              Int
-  credentialDeviceType String
-  credentialBackedUp   Boolean
-  transports           String?
-  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  username      String?      @unique
+  emailVerified DateTime?
+  image         String?
+  stravaId      String?      @unique
+  totalCycling  Float        @default(0)
+  totalDistance Float        @default(0)
+  totalRunning  Float        @default(0)
+  totalSwimming Float        @default(0)
+  totalWalking  Float        @default(0)
+  accounts      Account[]
+  activities    Activity[]
+  sessions      Session[]
+  userAvatar    UserAvatar[]
+}
 
-  @@id([userId, credentialID])
+model UserAvatar {
+  id         String   @id
+  userId     String
+  avatarId   String
+  obtainedAt DateTime @default(now())
+  Avatar     Avatar   @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, avatarId])
+}
+
+enum ActivityType {
+  RUN
+  TRAIL_RUN
+  RIDE
+  WALK
+  HIKE
+  SWIM
+  OTHER
+}
+
+enum Rarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
 }
